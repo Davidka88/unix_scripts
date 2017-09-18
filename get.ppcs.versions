@@ -1,0 +1,38 @@
+
+ # written to recover older versions of a file into directory pdi/pdi
+ # rewrite as needed
+ # $Id: get.ppcs.versions,v 1.0 2004-05-27 16:40:22-04 david Exp david $
+set -e
+if test $# -ne 3
+then
+	echo "Usage: `basename $0` file StartingVersion StoppingVersion"
+	exit 1
+fi
+
+SCCS_BASE=2	# sccs ids are 2.something
+FILE=$1
+STARTVERSION=$2
+STOPVERSION=$3	# retrieve up to, and including, this version
+
+cd $DEVELOPMENT
+DIR=`echo */$FILE`
+DIR=`dirname $DIR`
+cd $DIR
+
+if test ! -d $DIR
+then
+	mkdir $DIR
+	cd $DIR
+	echo "Created directory `pwd`"
+else
+	cd $DIR
+fi
+
+VER=$STARTVERSION
+
+while test $VER -le $STOPVERSION
+do
+	asccs get -r$SCCS_BASE.$VER $FILE
+	mv $FILE $FILE.$SCCS_BASE.$VER
+	VER=`expr $VER + 1`
+done

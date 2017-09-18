@@ -1,0 +1,11 @@
+ # change carriage returns into linefeeds in input files
+ # $Id: crnl,v 1.0 2004-05-27 21:25:06-04 david Exp david $
+if [ $# -eq 0 ]
+then
+	tr '\015' '\012'	# use stdin
+else
+	for F in "$@"
+	do
+		tr '\015' '\012' <$F
+	done
+fi

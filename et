@@ -1,0 +1,15 @@
+ # args: [editor_options] tag
+ # $Id: et,v 1.0 2004-05-27 21:25:08-04 david Exp david $
+# parse editor options
+for ARG
+do
+	case $ARG in
+	-*) OPT="$OPT $ARG"; shift ;;
+	*) break;;
+	esac
+done
+
+TAG="$1"
+if test "$EDITOR" = ""; then EDITOR=vim; fi
+echo "editing file containing tag $TAG, editor=$EDITOR"
+exec $EDITOR $OPT -t "$TAG"

@@ -1,0 +1,63 @@
+
+# Bourne shell script to generate a PhoenixPage testfile, prepending
+ # $Id: gentest,v 1.0 2004-05-27 16:40:21-04 david Exp david $
+# the pgtime header
+PGTIME=/users/yde/ppsaux/pgtime.v9a
+#PGTIME=/qa/ps/suite/special/pgtime.v9b
+#PGTIME=/qa/ps/tools/header.ps2
+# PGTIME=/users/kevinm/pgtimes/pgtime.v9b
+USAGE="Usage: `basename $0` [-x (for exitserver)] postscript_filename"
+set -- `getopt x $*`
+if [ $? != 0 ]
+then
+	echo "$USAGE" 1>&2
+	exit 1
+fi
+for i in $*
+do
+	case $i in
+	-x)  EXITSERVER=yes; shift ;;
+	--) shift; break;;
+	esac
+done
+if [ ! $# -eq 1 ]
+then
+	echo "$USAGE" 1>&2
+	exit 1
+fi
+
+echo -n "pgtime header used: $PGTIME" 1>&2
+
+if [ "$EXITSERVER" ]	# non-blank means do exitserver
+then
+	echo -n " in exitserver context" 1>&2
+	echo serverdict begin 0 exitserver	# in test file
+fi
+echo '' 1>&2	# terminate line on screen
+
+NAME="$1"
+if [ -f "$1" ]
+then
+	SOURCE="$1"
+else
+	SOURCE=""
+	echo "$0: $1 not found, reading from stdin" 1>&2
+fi
+
+echo '%!'
+echo "/_fname ($NAME) def"
+echo "/_host  (`hostname`) def"
+date +"/_date (%m/%d %H:%M) def"
+echo "/_config (`hostname`) def"
+echo "/_do_csum true def"
+echo "/_do_print true def"
+echo "/_do_send true def"
+echo "/_page_height 725 def"
+echo "/_page_width 600 def"
+cat $PGTIME
+if [ "$EXITSERVER" ]	# non-blank means do exitserver
+then
+	echo -n ''	# make sure exitserver is terminated
+fi
+cat $SOURCE
+echo -n ''	# make sure PS job is terminated

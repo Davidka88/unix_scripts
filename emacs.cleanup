@@ -1,0 +1,12 @@
+ # $Id: emacs.cleanup,v 1.0 2004-05-27 16:40:21-04 david Exp david $
+echo "starting emacs and xvi cleanup "
+D="/home/ /home1/"
+df $D
+if test "$1" = prompt
+then
+	find $D \( -name '#*' -o -name '*~' \) -exec rm -i {} \;
+else
+	find $D \( -name '#*' -o -name '*~' \) -print -exec rm {} \;
+fi
+df $D
+echo "finished emacs cleanup "

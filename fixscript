@@ -1,0 +1,34 @@
+
+ # remove carriage returns from input files
+ # $Id: fixscript,v 1.0 2004-05-27 21:31:49-04 david Exp david $
+# followed by
+# David Elins Q&D program to remove backspace and DEL chars from files
+# by default, it fixes up files named "typescript"
+
+if [ $# -eq 0 ]
+then
+	New=/tmp/fxsctmp.$$
+	File=typescript
+	Ecode=0
+	trap 'rm -f $New; exit 1' 1 2 15	# clean up
+	if tr -d '\015' < $File | bkspc >$New   # do actual command, save output
+	then
+		trap '1 2 15'	# we are committed; ignore signals
+		cp $New $File
+	else
+		Ecode=$?
+		echo "`basename $0`: $File failed, $File unchanged" 1>&2
+	fi
+	rm -f $New
+	exit $Ecode
+fi
+	for F in "$@"
+	do
+	if [ $F = "-" ]
+	then
+		tr -d '\015' | bkspc	# use stdin
+	else
+		tr -d '\015'  <$F | bkspc
+	fi
+	done
+fi

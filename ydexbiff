@@ -1,0 +1,5 @@
+ #!sh
+ # $Id: ydexbiff,v 1.0 2004-05-27 16:40:28-04 david Exp david $
+# Bourne shell script, xbiff only seems to work if run in this directory
+chdir /usr/local/X11/include/bitmaps
+/usr/bin/X11/xbiff++ $*

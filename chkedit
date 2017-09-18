@@ -1,0 +1,45 @@
+
+ # Bourne shell script to see who is editing what (rev250 and above)
+ # $Id: chkedit,v 1.0 2004-05-27 16:40:30-04 david Exp david $
+if test "$1" = check_edit
+then	# execute recursive call to self
+	if test ! -d $PROJECTROOT/$2/SCCS
+	then
+		exit	# no SCCS directory ==> not a development directory
+	fi
+	cd $DEVELOPMENT/$2	# recursive call, cd has no effect after "exit"
+	EDITED=`asccs info`
+	if test "$EDITED" != "Nothing being edited"
+	then
+		HERE=`pwd`
+		HERE=`basename $HERE`
+		echo "$EDITED" | sed s"/$/	($HERE\/)/"
+	fi
+	exit
+fi
+
+# top level invocation of this procedure
+echo "DEVELOPMENT=$DEVELOPMENT"
+if test $# -ne 0
+then
+	for D
+	do
+		if test "$D" = .
+		then
+			D=`pwd`
+			D=`basename $D`
+		fi
+		# only check directories
+		if test -d $DEVELOPMENT/$D; then $0 check_edit $D; fi
+	done
+	exit
+fi
+# default: scan all directories
+	cd $DEVELOPMENT	# check only yde's development directories
+	for F in *
+	do
+		if test -d $F
+		then
+			$0 check_edit $F
+		fi
+	done

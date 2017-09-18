@@ -1,0 +1,6 @@
+ # $Id: dectty,v 1.0 2004-05-27 21:31:49-04 david Exp david $
+stty dec new cr0
+set TERM=vt100
+export TERM
+stty
+echo "TERM=$TERM"

@@ -1,0 +1,12 @@
+
+ # temporary market2 backup over ethernet
+ # $Id: backup.market2,v 1.0 2004-05-27 16:40:29-04 david Exp david $
+set -x
+cd /usr/elins/ppcs/aplt/market2
+sh -x <<\EOF 2>&1 | tee market2.tar.lis
+	cd /market2.users
+	tar cvf - ppcs/*build yde | compress -v > /usr/elins/ppcs/aplt/market2/market2.tar.Z
+	# tar cvf /usr/elins/ppcs/aplt/market2/market2.tar ppcs/*build yde
+	# cd /usr/elins/ppcs/aplt/market2
+	# compress -v market2.tar
+EOF

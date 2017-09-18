@@ -1,0 +1,99 @@
+
+ # Bourne shell script to copy selected files in case I blow them away
+ # $Id: backup.local,v 1.0 2004-05-27 16:40:28-04 david Exp david $
+ # backing up debug development files
+WHOAMI=`basename $0`
+SAVEDIR=/home1/saved
+DONTBACKUP=/home1/saved/Backup.Exclude
+LOG=$SAVEDIR/backup.log
+LIST=$SAVEDIR/backup.files
+TMP=$SAVEDIR/backup.tmp
+SAVESET=$SAVEDIR/files	# prefix of save file names
+TODAY=`date +%d%h%y`	# e.g. 30Apr91
+PPSDEVELOPMENT=/users/yde/ppcs
+BUGREV=`basename $PPSDEVELOPMENT`
+SPACE=' '
+TAB='	'
+NUM_SAVES=5	# maximum number of incremental backups to keep
+# directories to examine
+DIRS="/users/yde/notes \
+	/users/yde/ppsaux"
+DIRS="/users/yde/notes \
+	/users/yde/personal \
+	/users/yde/ppsaux \
+	/users/yde/src"
+DIRS="$DIRS `find $PPSDEVELOPMENT/* -prune \( ! \( -name bw -o -name color -o -name contone -o -name disabled -o -name ps1\*  -o -name editsave -o -name \*profile \) -print \)`"
+if test -d $PPSDEVELOPMENT/debug
+then
+	DIRS="$DIRS `find $PPSDEVELOPMENT/debug/* -prune \( ! \( -name color -o -name bw \) -print \)`"
+fi
+DIRS="/users/yde/.??* $DIRS"	# backup hidden files in home directory
+if test ! -f $SAVESET.base.Z
+then
+	WHOAMI=backup.total	# no time stamp, back everything up
+else
+	TIMESTAMP=`ls -t $SAVESET* | head -1`	# most recent save set
+	STAMPDATE=`ls -l $TIMESTAMP \
+	| sed 's/................................\(............\).*/\1/'`
+fi
+if test $WHOAMI = backup.local
+then
+	find $DIRS -type f -newer $TIMESTAMP -print > $TMP
+	if test -s $TMP	# new files ?
+	then
+		sort -u -o $TMP $TMP	# eliminate duplicate file names
+		# to save space,don't back up some files
+		ed $TMP < $DONTBACKUP > dev/null 2>> $LOG
+		FILECOUNT=`wc -l $TMP | sed -e s'/^ *//' -e s'/ .*//'`
+		echo -n "===>" >> $LOG
+		date >> $LOG
+		echo -n "===>Daily file backup $FILECOUNT files" >>$LOG
+		echo " in $SAVESET.0.Z" >> $LOG
+		echo "===>Files created/modified since $STAMPDATE" >>$LOG
+		echo "===>Directories:" >> $LOG
+		echo $DIRS | sed -e 's/ /\
+/g' | sed "s/^/$TAB/" >> $LOG
+		CTR=`expr $NUM_SAVES - 1`	# keep NUM_SAVES day;s worth
+		while test $CTR -gt 0
+		do
+			NEXTCTR=`expr $CTR - 1`
+			if test -f $SAVESET.$NEXTCTR.Z
+			then
+				mv $SAVESET.$NEXTCTR.Z $SAVESET.$CTR.Z
+			fi
+			CTR=$NEXTCTR
+		done
+		# sort in order of file size, largest first
+		tar cvf $SAVESET.0 `cat $TMP` | sed "s+^+$TODAY$TAB+" | sort -t"$SPACE" -nr +2 -o $LIST - $LIST
+		compress -vf $SAVESET.0 >> $LOG 2>&1	# force compression
+		MESSAGE="Daily file backup finished"
+	else
+		MESSAGE="No files backed up on"
+	fi
+fi
+if test $WHOAMI = backup.total
+then
+	# run these commands to backup all files (i.e. create a base set)
+	find $DIRS -type f -print > $TMP
+	sort -u -o $TMP $TMP	# eliminate duplicate file names
+	# to save space,don't back up some files
+	ed $TMP < $DONTBACKUP > dev/null 2>> $LOG
+	FILECOUNT=`wc -l $TMP | sed -e s'/^ *//' -e s'/ .*//'`
+	echo -n "===>" > $LOG	# recreate log file
+	date >> $LOG
+	echo -n "===>Full file backup $FILECOUNT files" >>$LOG
+	echo " in $SAVESET.base.Z" >> $LOG
+		echo "===>Directories:" >> $LOG
+		echo $DIRS | sed -e 's/ /\
+/g' | sed "s/^/$TAB/" >> $LOG
+	rm -f $SAVESET.base*
+	# create base backup set and initiate sorted list of files
+	# sort in order of file size, largest first
+	tar cvf $SAVESET.base `cat $TMP` | sed "s+^+$TODAY$TAB+" | sort -t"$SPACE" -nr +2 -o $LIST -
+	compress -vf $SAVESET.base >> $LOG 2>&1	# force compression
+	rm -f $SAVESET.[0-9]*.Z	# clean out daily backups
+	MESSAGE="Full file backup finished"
+fi
+ls -lt $SAVESET* >> $LOG
+echo "===>$MESSAGE on `date`" >> $LOG
+/etc/chown yde $LOG $TMP $SAVESET.*

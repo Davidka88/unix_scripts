@@ -1,0 +1,217 @@
+# C-shell script
+ # $Id: chkpps1,v 1.0 2004-05-27 16:40:31-04 david Exp david $
+# this script compares the files used for development to the files
+# in the database
+# the output from running this script can be used as a Bourne shell script
+# to update the development directory
+# When the files are updated, the development source is linked to the core
+# base version, if that is the same as the database version
+# otherwise the database version is moved to the development directory
+# if the development file has changed
+# assumptions:
+#	the passwd file has an entry ~pps which points to the development base
+#	directory
+#	this directory basename (last portion of path) is revnnn, the
+#	appropriate rev
+#	the core base tree is in ~ppcs/revnnn
+# this version is written by, and specific to david elins (yde)
+# allowance is made for certain files that yde changes in his personal copy
+# the original copies offiles which I change for personal use are in
+# sourcedir/sourcedir/filename e.g. custom/sun.c is in custom/custom/sun.c
+# there may be other yde-isms that I don't remember installing
+# 18May89 - Modification -d development_directory may be specified
+# 03Aug89 - Modification sed used to speed up execution of output file script
+# 04Aug89 - Compare option added to output file script
+# 09Sep89 - use pscs to extract files, making sure directory tree is used
+# 03Apr90 - updated for rev230, link to /~ppcs tree if OK
+# 07Jun90 - ?build scripts are now gnu?build
+if ( ! $?CORE ) then # reinvoke myself to compare files
+	# top level ivocation - set up to reinvoke to compare files
+	# so that output can be easily captured in a file
+	set CMD = `basename $0`
+	set DEFAULT_REV = rev250
+	setenv REV $DEFAULT_REV
+	set DEFAULT_DIRS = "include immov custom math pdi driver ps cdriver dcdriver bstream fontfs speedo libm libc"
+	# parse options
+	set argv = ( `getopt hr: $*` )
+	if ( $status ) then
+		echo "Usage: `basename $0` [-revnnn] [directory directory ...]"
+		echo "type $CMD -h for more help"
+		exit 1
+	endif
+	foreach ARG ( $* )
+		switch ( $ARG )
+		case -r:
+			setenv REV r$2 ; shift; shift; breaksw;
+		case -h:
+			cat << EOF
+this is help text from another script, change it
+$CMD makes a development directory tree, linking all source files
+to versions in the release directory $CORE/$DEFAULT_REV.
+The release direectory is $DEFAULT_REV by default, but may be overridden
+by specifying -revnnn, where nnn is the release number wanted.
+The directories created are
+$DEFAULT_DIRS
+by default, but may also be specified on the command line.
+You should be positioned in the root of your development directory whan
+you run this script, and the development directories you are creating should
+not exist.
+EOF
+	exit
+	case --:
+		shift; breaksw;
+	endsw
+end
+	setenv CORE  ~ppcs/$REV	# core sources
+	set CMPLOG = ~/$CMD.out
+	setenv DEVDIR ~/$REV
+	if( $user == yde ) setenv DEVDIR ~pps
+	echo "csh $0 $REV > $CMPLOG starting"
+	if "$1" == "" set argv = ( $DEFAULT_DIRS )
+	exec csh $0 $* >& $CMPLOG
+endif
+# running in background - start to compare files
+set TMPDIR = ~/cmp	# scratch directory
+set CHG = ""	# save names of changed files
+# extract requested version's sources
+# generate Bourne shell script
+echo ""
+echo " # Bourne shell script to update or compare $DEVDIR files"
+echo " # Directories under consideration are:"
+echo " # $argv"
+echo "sed '1,/EOFINPUT/d' << EOFINPUT"
+echo "if false	# $0 informational output: "
+echo then
+echo "Cleaning up scratch directory $TMPDIR"
+rm -rf $TMPDIR	# clean up after last script failure
+mkdir $TMPDIR
+cd $TMPDIR
+# compare requested version's sources to development versions
+foreach DIR ( $argv )
+	mkdir $DIR
+	cd $DIR
+	set DIRCHG = no
+	echo "pscs extracting $REV $DIR files into `pwd`"
+	pscs $REV get $DIR SCCS	> /dev/null	# throw away messages
+	echo "Comparing $REV files in `pwd`"
+	echo " to development files in $DEVDIR/$DIR"
+	foreach FILE (*)
+		set OFILE = $FILE
+		if ! -d $FILE then
+			if ( $user == yde ) then
+				if ( ($DIR == custom) && ($FILE == sun.c) ) then
+					set OFILE = custom/$FILE
+				else if ( ($DIR == custom) && ($FILE == sunview.c) ) then
+					set OFILE = custom/$FILE
+				else if ( ($DIR == custom) && ($FILE == gnubbuild) ) then
+					set OFILE = custom/$FILE
+				else if ( ($DIR == custom) && ($FILE == gnucbuild) ) then
+					set OFILE = custom/$FILE
+				else if ( ($DIR == custom) && ($FILE == bbuild) ) then
+					set OFILE = custom/$FILE
+				else if ( ($DIR == custom) && ($FILE == cbuild) ) then
+					set OFILE = custom/$FILE
+				endif
+			endif
+			diff $FILE $DEVDIR/$DIR/$OFILE >/dev/null
+			set DIFFSTATUS = $status
+			if ($DIFFSTATUS == 0) then
+				echo "No Change - $DIR/$OFILE";
+				rm -f $FILE
+			else if ($DIFFSTATUS == 1) then
+				echo "Is Change - $DIR/$OFILE";
+				set CHG = "$CHG $DIR/$FILE"
+				set DIRCHG = yes
+			else
+				echo "Unexpected Error - $DIR/$OFILE";
+			endif
+		endif
+	end
+	cd ..
+	if "$DIRCHG" == no rmdir $DIR
+end
+echo "scratch directory `pwd` contains $REV copies of all sccs files"
+echo "fi # end of $0 informational output"
+echo "EOFINPUT"
+if "$CHG" == "" then
+	echo 'echo "No files were changed"'
+	cd ..
+	rmdir cmp
+	exit
+endif
+cat <<EOF
+
+ # Bourne shell script to update $DEVDIR files
+if test \`pwd\` != $HOME
+then
+	echo "Not in home directory $HOME"
+	exit
+fi
+if test "\$1"
+then
+	echo -n "An argument was specified - comparing"
+else
+	echo -n "No argument was specified - replacing"
+fi
+	echo " data base files to development files"
+for FILE in $CHG
+do
+	if test \$LOGNAME = yde
+	then
+		FIX="csh $DEVDIR/../ppsaux/\$FILE.fix"	# default: fix up file for yde
+		if test \$FILE = custom/sun.c
+		then
+			OFILE=custom/\$FILE
+		elif test \$FILE = custom/sunview.c
+		then
+			OFILE=custom/\$FILE
+		elif test \$FILE = custom/gnubbuild
+		then
+			OFILE=custom/\$FILE
+		elif test \$FILE = custom/gnucbuild
+		then
+			OFILE=custom/\$FILE
+		elif test \$FILE = custom/bbuild
+		then
+			OFILE=custom/\$FILE
+		elif test \$FILE = custom/cbuild
+		then
+			OFILE=custom/\$FILE
+		else
+			OFILE=\$FILE
+			FIX=""	# don't fix up file for yde
+		fi
+	fi
+
+	if test "\$1"
+	then
+		ACTION="diff $TMPDIR/\$FILE"	# simply compare files
+	# see if changed file has been updated in core release source tree
+	elif diff $TMPDIR/\$OFILE $CORE/\$FILE >/dev/null
+	then
+		ACTION="ln -s $CORE/\$FILE"	# file matches core version
+	else
+		ACTION="mv $TMPDIR/\$FILE"	# datavbase doesn't match core
+	fi
+
+	echo  -n "\$ACTION -> $DEVDIR/\$OFILE"
+
+	if test "\$1"
+	then
+		echo ""
+		\$ACTION $DEVDIR/\$OFILE
+	else
+		# swap new and old copies of files
+		mv $DEVDIR/\$OFILE $TMPDIR/swap.fil
+		\$ACTION $DEVDIR/\$OFILE
+		rm -f $TMPDIR/\$FILE
+		mv $TMPDIR/swap.fil $TMPDIR/\$FILE
+		echo " swapped"
+		if test "\$FIX"
+		then
+			echo \$FIX
+			\$FIX
+		fi
+	fi
+done
+EOF

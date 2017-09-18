@@ -1,0 +1,51 @@
+# C-shell script
+ # $Id: chklnk,v 1.0 2004-05-27 16:40:30-04 david Exp david $
+# this script compares the files used for development to the files
+# in the release tree
+# if compares only real files (not symbolic links)
+# if a real file is no different from the corresponding file in the release
+# tree, output is generated
+# the output from running this script can be used as a Bourne shell script
+# to remove the real files and instead make symbolic links to the release tree
+if ( ! $?CMPLOG ) then # reinvoke myself to compare files
+	set CMD = `basename $0`
+	setenv CMPLOG $HOME/$CMD.out
+	set CMD = ~ebin/$CMD
+	setenv DEVDIR ~pps	# development directory
+	set REV = `basename $DEVDIR`
+	setenv CORE /u6/ppcs/$REV	# core shadow copies
+	if "$1" == "" then
+		# find directories in common between current directory,sccs dir
+		cd ~ppcs/sccs/$REV
+		set SCCSDIRS = `find * -type d -print -prune`
+		cd $DEVDIR
+		set COMMON_DIRS  = ""
+		foreach D ($SCCSDIRS)
+			if ( -d $D ) set COMMON_DIRS  = "$COMMON_DIRS$D "
+		end
+
+		set argv = ( $COMMON_DIRS )
+	endif
+	echo "csh $CMD $argv > $CMPLOG starting"
+	echo "" > $CMPLOG
+	echo " # Bourne shell script to remove real files" >> $CMPLOG
+	echo " # and replace with equivalent symbolic links" >> $CMPLOG
+	echo "set -x" >> $CMPLOG
+	echo "cd $DEVDIR" >> $CMPLOG
+	cd $DEVDIR
+	find $argv -type f -exec csh $CMD {} \; >> $CMPLOG
+else
+	set DIR = `dirname $1`
+	set FILE = `basename $DIR`/`basename $1`
+	if { diff $1 $CORE/$FILE >& /dev/null } then
+		if ( -f $CORE/$FILE ) then
+			echo "rm $1"
+			echo "ln -s $CORE/$FILE $1"
+			echo "ls -l $1"
+		else
+			echo "# rm $1	# $CORE/$FILE doesn't exist"
+		endif
+	else
+		echo "$1 differs from $CORE/$FILE"
+	endif
+endif

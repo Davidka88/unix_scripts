@@ -1,0 +1,27 @@
+ # shell script to backup all of /usr except what has already been backed up
+ # $Id$
+set -x
+/etc/dump 0bcsf 126 5200 nuage:/dev/nrst8  \
+	/usr/5bin \
+	/usr/5include \
+	/usr/5lib \
+	/usr/bin \
+	/usr/demo \
+	/usr/diag \
+	/usr/dict \
+	/usr/etc \
+	/usr/export \
+	/usr/games \
+	/usr/hosts \
+	/usr/include \
+	/usr/kvm \
+	/usr/lib \
+	/usr/lost+found \
+	/usr/old \
+	/usr/sccs \
+	/usr/share \
+	/usr/ucb \
+	/usr/usrfiles \
+	/usr/xpg2bin \
+	/usr/xpg2include \
+	/usr/xpg2lib

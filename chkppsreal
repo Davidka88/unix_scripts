@@ -1,0 +1,29 @@
+
+ # Bourne shell script to see who is editing what (rev250 and above)
+ # $Id: chkppsreal,v 1.0 2004-05-27 16:40:31-04 david Exp david $
+if test "$1" = get_directories
+then	# execute recursive call to self
+	shift
+	for D
+	do
+		if test -d $D -a $D != color -a $D != bw -a $D != contone
+		then
+			DIRS="$DIRS $D"
+		fi
+	done
+	echo $DIRS
+else
+	# top level invocation of this procedure
+	cd $PPSDEVELOPMENT	# check only yde's development directories
+	pwd
+	if test $# -ne 0
+	then
+		DIRS=`$0 get_directories $*`
+	else
+		DIRS=`$0 get_directories *`
+	fi
+	# scan all directories
+	CMD="find $DIRS -type f -ls"
+	echo $CMD
+	$CMD
+fi

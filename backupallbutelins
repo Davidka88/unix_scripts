@@ -1,0 +1,3 @@
+ # $Id: backupallbutelins,v 1.0 2004-05-27 16:40:29-04 david Exp david $
+F2=`ls -F /usr | sed -e 's-^-/usr/-' -e '/elins/d'`
+echo "F2 = $F2"

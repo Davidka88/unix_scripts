@@ -1,0 +1,23 @@
+ # args: [editor_options] grep_string [file ...]
+ # $Id: eg,v 1.0 2004-05-27 21:25:08-04 david Exp david $
+# parse editor options
+for ARG
+do
+	case $ARG in
+	-*) OPT="$OPT $ARG"; shift ;;
+	*) break;;
+	esac
+done
+
+PATTERN="$1"
+shift
+if [ $# -eq 0 ]
+then
+	FILES="*.c's"
+	set *.c
+else
+	FILES='specified files'
+fi
+if test "$EDITOR" = ""; then EDITOR=vim; fi
+echo "editing $FILES containing /$PATTERN/ with editor=$EDITOR"
+exec $EDITOR $OPT +"/$PATTERN/" `grep -l "$PATTERN" $*`

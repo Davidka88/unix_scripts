@@ -1,0 +1,21 @@
+
+ # NEEDS TESTING
+ # Bourne shell script to compress a directory tree
+ # designed to be used with PhoenixPage but should work for any directory
+ # $Id: compress.ppcs,v 1.0 2004-05-27 16:40:20-04 david Exp david $
+set -e	# exit on any error
+df /users/yde
+HERE=`pwd`
+HERE=`basename $HERE`
+echo $HERE
+SAVESET=$HERE.tar.Z
+FILES=`echo * | sed -e 's/compress.me//' -e 's/a\.out//' -e 's/Imakefile//' -e 's/local.cnf[.a-z]*//g'`
+echo "Compressing directory `pwd` into $SAVESET, files:"
+tar cvf - $FILES | compress > $SAVESET
+echo "Should compressed files be kept (answer \"yes\" to prevent deleting them)"
+read ANSWER
+if test ! "$ANSWER" = yes
+then
+	rm -r $FILES
+fi
+df /users/yde

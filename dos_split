@@ -1,0 +1,29 @@
+
+# shell script, standard input should be redirected from a wc listing
+# $Id: dos_split,v 1.0 2004-05-27 21:25:07-04 david Exp david $
+DISKNO=0
+TOTAL=0
+NUM=0
+LIMIT=360000
+if test "$1"; then LIMIT=$1; fi
+echo "Disk Limit = $LIMIT MS/DOS bytes"
+while read LINES WORDS CHARS FILE
+do
+	 if test $FILE = total; then break; fi
+	 DOSCHARS=`expr $LINES + $CHARS`
+	 NUM=`expr $NUM + 1`
+	 TOTAL=`expr $TOTAL + $DOSCHARS`
+	 if test \( $TOTAL -gt $LIMIT \) -o \( $NUM -eq 1 \)
+	 then
+		TOTAL=`expr $TOTAL - $DOSCHARS`
+		if test $DISKNO -gt 0
+		then
+			echo "Disk $DISKNO contains $TOTAL MS/DOS bytes in $NUM files"
+		fi
+		NUM=1
+		TOTAL=$DOSCHARS
+		DISKNO=`expr $DISKNO + 1`
+		echo "Disk $DISKNO starts with $FILE"
+	fi
+done
+echo "Final disk $DISKNO contains $TOTAL MS/DOS bytes in $NUM files"

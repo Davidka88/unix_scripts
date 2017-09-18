@@ -1,0 +1,60 @@
+ # do command in background, making nice
+ # $Id: bg,v 1.1 2011/04/06 20:51:48 David Exp David $
+USAGE="usage: $0 [-vmq] command[s]"
+set -- `getopt vmq $*`
+if [ $? != 0 ]
+then
+    echo "$USAGE"
+    exit 1
+fi
+TYPE=visualbell	# default
+for i in $*
+do
+    case $i in
+    -v)	TYPE=visualbell; shift;;
+    -m) TYPE=message; shift;;
+    -q)	QUIET=y; shift;;
+    --) shift; break;;
+    esac
+done
+if [ $# = 0 ]
+then
+    echo "$USAGE"
+    exit 1
+fi
+(
+nice sh -c "exec $*"
+if [ ! -n "$QUIET" ]
+then
+    if [ $TYPE = visualbell ]
+    then
+	echo "\07\033[?5h\c" >/dev/tty
+	echo "\033[?5l\c" >/dev/tty
+    else
+	echo "exit bg $$ \07\c" >/dev/tty
+    fi
+fi
+) &
+if [ ! -n "$QUIET" ]
+then
+    echo "background pid $!" >/dev/tty
+fi
+#                   Copyright 2011 by David M. Elins
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the  Free  Software  Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,  but
+# WITHOUT   ANY   WARRANTY;  without  even  the  implied  warranty  of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE.  See  the  GNU
+# General Public License for more details.
+#
+# A  copy  of  the  GNU  General  Public  License  (GPL)  be  found at
+# <http://www.gnu.org/licenses/gpl-3.0-standalone.html>.
+#
+# One  is  supposed  to be included here but doing so would bloat this
+# source code too much.
+#
+# vim:tabstop=8:shiftwidth=4:noexpandtab filetype=sh

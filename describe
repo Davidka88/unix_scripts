@@ -1,0 +1,1000 @@
+	# this file is under development
+# $Id: describe,v 1.0 2004-05-27 21:25:07-04 david Exp david $
+# rename this file me READ.ME when done,
+# and replace READ.ME in the saved file archive
+# possibly organize files by function, rather that alphabetically
+# and maybe get rid of fullnames file ?
+# Shell script to extract files from archive (to help in writing this document)
+compress -d < ../ydestuff.glue.Z | ydeglue - -i "$@"
+exit
+Utility conventions.
+All C source files (unless otherwise noted)
+1. Produce codes that works essentially identically on Unix, MS/DOS, and VMS.
+   The same source code can be compiled on each of these operating systems.
+Additionally, all utilities (unless otherwise noted)
+1. Follow the same Unix-like usage conventions:
+   utility_name [-options] [filename [filename ..]]
+2. Include a -h option which prints a description of the utility
+   and other useful information.
+3. If the utility successfully completes, a success exit code
+   is returned (1 on VMS, 0 on Unix and MS/DOS).
+   Otherwise an error exit code is returned. Which error code depends
+   on the utility, the error, and the operating system.
+4. An incorrect command line (for example, an unsupported option)
+   will force the display of a brief usage line and return a
+   error status.
+5. Standard output can be redirected on all operating systems, including VMS.
+Additionally, the filter utilities (unless otherwise noted)
+1. Act as Unix-type filters, i.e. the filename arguments are treated as
+   input files and the utility output goes to standard output.
+   A single dash as an "input file" specifies the standard input.
+2. Follow the same basic structure and use the filter.c and basename.c programs
+   described below.
+Finally, although most of these programs have been used extensively and
+have had their bugs worked out; I may have not anticipated all situations in
+which the programs will be used. Please tell me of any errors encounterd.
+Tbanks.
+David M. Elins
+READ.ME
+	This file describing all the other files in the collection.
+fullnames
+	Full unix names of all these files. VMS and MS/DOS filename size
+	restrictions may truncate some of the filenames (but the names
+	are unique to the most repressive of these restrictions).
+addcr.c
+	Filter utility to prefix all newlines (line feeds)
+	with carriage returns, if not already so prefixed.
+backtar
+	Like backup belp, except it uses the Unix tar command instead of
+	the Unix dump command.
+backup
+	Unix Bourne shell script to backup a disk partition using dump.
+	Written for a specific installation and needs to be modified
+	for each particular installation.
+backuplist.com
+	VMS command procedure to list VMS backup file.
+basename.c
+	char *
+	basename(name)
+	char name[];
+
+	Perform the Unix basename(1) function from a C program,
+	to strip directory prefixes from a filename.
+	Works on Unix, VMS, and MS/DOS.
+
+	On Unix, basename() does not strip suffixes (unlike some
+	Unix basename(1) commands).
+
+	On VMS and MS/DOS, filename suffixes are always stripped:
+	using basename2() (also in this list).
+	which strips directory prefixes and filename suffixes but copies
+	the modified filename. basename() provides local static storage
+	to hold the modified filename.
+
+	char *
+	basename2(to,from)
+	char *to;
+	char *from;
+	basename2(to,from)
+batchprompt.c
+	MS/DOS program to prompt user and get 1 character answer,
+	with default answer and timeout value. Returns exit status
+	that can be used as ERRORLEVEL in a DOS batch file.
+batchsync.com
+	VMS command procedure to  sync, waiting for a particular batch job.
+bdoscpm.h
+	A file of constants from Mark William's C for CP/M. They are used
+	used some of the programs in this file (MS/DOS seems to have
+	copied much from CP/M).	
+bg
+	Unix Bourne shell script to run a command(s) in the background (&).
+binsort.c
+	C routines to manage a sorted list using binary search techniques.
+	int
+	sort_find(item,itemsize,sorted,count,compare)
+		returns index of item in sorted list
+		if item is not found returns negation index of item
+		following where item would have been
+	int
+	sort_insert(item,itemsize,sorted,count,compare)
+		makes space to insert an item in a sorted list
+		if item not fonnd in list, items following where
+		new item should go are moved/* insert item in sorted list */
+		returns index where item should go
+		if item already exists in list, list is not modified and
+		-1 is returned
+		item is not inserted in list nor is count updated
+	int
+	sort_remove(item,itemsize,sorted,count,compare)
+		removes an item from a sorted list
+		if item is found, it is removed from the list by moving the
+		items following it and the index of where the item was
+		is returned.
+		if item is not found , list is not modified and
+		-1 is returned
+
+	parameters:
+	char *item;         /* pointer to item to compare against sorted list */
+		need not be an item in the list; this argument is simply passed
+		to the compare routine
+		int itemsize;       /* size of item in list */
+	char *sorted;       /* already sorted list */
+	unsigned int count; /* length of sorted items */
+	int (*compare)();   /* user-supplied element comparison routine */
+		compare is called with two arguments,
+		the item argument passed to this routine and an item from the
+		sorted list
+bj.c
+	Takes the place of the dealer in a single-player Blackjack game.
+	validating each of the player's moves is validated against the
+	"correct" play as dictated by a basic strategy.
+
+	Like the utilities, this program takes several options, including
+	-h to print a description of itself.
+bkspc.c
+	Filter utility to remove backspace and DEL chars from files.
+	Uses filter.c but not basename.c.
+	Unlike other filters, recognizes no -options (not even -h),
+	but does recognize that a single - represents standard input.
+bytorder.c
+	Prints information about host machine archtecture:
+	size of c integer data types, how bytes are ordered within
+	a multibyte value.
+cat.com
+	VMS command procedure to  mimic the Unix cat command, including
+	input and output redirection.
+cd.com
+	VMS command procedure to mimic the Unix cd command.
+	Unlike dirstack.com, this file does not maintain a directory
+	stack, but it does remember the previous directory (like
+	some C-shell cd commands).
+changes.com
+	VMS command procedure to compare files in the O$ directory
+	to files in the current directory (O$ may be a logical name).
+cleantk50.com
+	VMS command procedure to write garbage over a TK50 cartridge tape,
+	obliterating anything that was there already.
+clidef.h
+	VMS $CLIDEF (command language interpreter) assembly language
+	definitions converted to a C include file
+	(extracted from the system file starlet.mlb).
+clpr
+	Unix Bourne shell script to print (C) files using my pr and prps
+	(PostScript) filters.
+compress.c
+	Public domain Lempel-Ziv data compression program.
+	I modified it to support MS/DOS.
+	This compression algorithm is used by the Usenet network and
+	is also supplied on Sun Unix as the compress command.
+credef.h
+	VMS $CREDEF assembly language definitions converted to a C include file.
+	(extracted from the system file starlet.mlb).
+crelnm.c
+	VMS routine vmscrelnm() to define a logical name in any
+	logical name table at any access mode.
+	Includes lnmdef.h and itmlst.h.
+	Calls the sys$crelnm system service.
+crnl
+	Unix Bourne shell script to change carriage returns int
+	newlines (linefeeds). Essentially a front end to  the Unix "tr"
+	command.
+cshrc.sun
+	Unix C shell .cshrc file used on the sun.
+ctab.c
+	Filter utility to convert tabs to spaces or spaces to tabs,
+	maintaining the same visual appearance of each page.
+cvttime.c
+	Utility routines to parse a Unix style ascii date, returning
+	a longword value representing seconds (or days) since Jan 1, 1970.
+dayofwk.c
+	Utility routine to print the day of the week on which a given date
+	occurs. Uses routines in cvttime.c.
+dectty
+	Unix Bourne shell script to set terminal characteristics
+	for a DEC VT100 terminal.
+define.c
+	VMS routine vmsdefine() to define a user mode logical name.
+	Includes lnmdef.h and itmlst.h.
+	Calls vmscrelnm (in crelnm.c).
+delbelow.com
+	VMS command procedure to delete a directory tree (including files
+	such as subdirectories, which are normally protected against delete).
+dellnm.c
+	VMS routine vmsdellnm() to delete a logical name.
+	Includes lnmdef.h.
+	Calls the sys$dellnm system service.
+delsymbol.c
+	VMS routine delsymbol() to delete a DCL symbol.
+	Calls the lib$delete_symbol runtime library routine.
+depend.com
+	VMS command procedure to process dependencies among a set
+	of files. If one file is dependent on another (for example
+	a source file might be dependent on a header file), the dependent
+	file's date-last-modified is changed (if necessary) so it is newer
+	than the file on which it depends.
+	This procedure can be used to co-ordinate with another VMS
+	command procedure (make.com) which acts like the Unix make utility.
+dirall.com
+	VMS command precedure to list all files on the sys$sysdevice disk.
+dircomp
+	Unix Bourne shell script to compare the files in two directory trees.
+dirstack.com
+	VMS command procedure to mimic the Unix C-shell pushd and popd
+	commands, i.e. changing the current directory but maintaining
+	a directory stack.
+dirtree.c
+	MS/DOS program to print filenames. The routine will descend
+	directory trees to print the filenames. I intend to use this
+	as a model for a wildcard expansion routine for MS/DOS.
+	Requires MS/DOS version 3 (I think).
+duplines
+	Unix Bourne shell script to duplicate each line in a text file.
+duplines.c
+	Filter utility to duplicate each line in a text file, e.g.
+        line 1           becomes               line 1
+        line 2                                 line 1
+                                               line 2
+                                               line 2
+	This is a standard filter utility (as described above).
+editback.c
+	Unix utility to edit files, making backup copies of the original
+	files. This is not a standard filter utility (as described above).
+	This utility will only back up a file if editing changes it.
+	The utility creates sub-processes that run concurrently, but tries
+	to limit the number of concurrent subprocesses it creates.
+editloop.com
+	VMS command procedure to edit a group of files (using the edt editor),
+	performing the same editing operations on each.
+	The files to edit may be specified using VMS wild card characters.
+edt.com
+	VMS command procedure to edit a of file (using the edt editor).
+	All files edited are "remembered" and can be re-edited using
+	a simple syntax to recall the file name. If no file name is
+	specified, the last file edited is re-edited.
+edunix.c
+	Executes Unix ed scripts (such as produced by the Unix "diff -e")
+	command. The program is self-documenting, using a Help character
+	string array: type "edunix -h" for a description.
+eg
+	Unix Bourne shell script to edit all files containing a
+	specified string (eg stands for edit-grep).
+	The editor used can be set with an environment variable
+	and defaults to "vi".
+egb
+	Exactly like eg above, but editing is done using the editback
+	utility mentioned elsewhere in this list.
+et
+	Unix Bourne shell script to edit the file containing a
+	specific C language "tag" (set using the Unix ctags utility).
+	The editor used can be set with an environment variable
+	and defaults to "vi".
+etb
+	Exactly like et above, but editing is done using the editback
+	utility mentioned elsewhere in this list.
+etext.c
+	Format a Vms error message.
+	A public-domain program (from Decus) that I modified.
+ex.rc
+	vi editor initialization file, usable on Unix and MS/DOS.
+exe2asc.c
+	A utility that converts binary files to an ascii representation.
+	Rather old and written for VMS and MS/DOS only.
+expandargv.c
+	VMS routine expandargv() to expand argv[] for VMS wild cards.
+	Inputs are the standard C argc and the address of argv (&argv).
+	The new argc value is returned, arg argv may be modified to contain
+	the expanded names.
+	Uses the VAX C runtime library routines SHELL$TO_VMS and SHELL$FROM_VMS.
+	Also uses malloc to expand arguments.
+filespec.c
+	VMS routine vmsfilespec() completely expand file names.
+	Calls vmsfindfile() (in findfile.c).
+filter.c
+	Routine to loop through filenames on a command line
+	reopening each as standard input and calling a routine to process them.
+	Uses nextargv.cnext to expand wild cards on VMS.
+filter.cnext
+	A newer version of filter.c.
+	Uses nextargv to expand wild cards on VMS and MS/DOS) and to
+	descend directory trees on Unix and MS/DOS.
+findf
+	Unix Bourne shell script to execute the find command.
+findfile.c
+	VMS routine vmsfindfile() to completely expand file names,
+	possibly containing wildcard characters.
+	vmsfindfile() can be called repeatedly to retrieve successive
+	instances of an expanded file name.
+findlinks
+	Unix Bourne shell script to find symbolic links
+	in the current directory.
+findrealfiles
+	Unix Bourne shell script to find plain files (not links or directories)
+	in the current directory.
+findx
+	Unix Bourne shell script to find in which directory of the user's
+	Unix PATH a given command is located.
+findx.c
+	MS/DOS program to find in which directory of the user's
+	PATH a given command is located.
+fixall.com
+	VMS command procedure to fix (by calling another command
+	procedure: fixup) all C source files in the current directory.
+fixup.com
+	VMS command procedure to fix up Unix-isms in some
+	of Alan Feuer's C files that I ported to VMS.
+freespace.c
+	VMS routine to print how much space on a given disk is free.
+genback.c
+	MS/DOS program to generate a batch file to copy files to
+	successive disks
+getaux.c
+	MS/DOS program to get lines from the AUX port.
+getcomment.c
+	Routine to isolate C comments from source files.
+	This is a standard filter utility (as described above).
+getdvi.com
+	VMS command procedure to display all information about a
+	disk (VMS getdvi = get device information).
+getfillm.c
+	VMS routine vmsgetfillm() to return a process's
+	open file limit (known as fillm).
+getimdat.ps
+	A PostScript procedure prolog to parse image and colorimage
+	operator data (which can be in one of many forms)
+	and print the per pixel per color values.
+getimmed.c
+	Routine getimmed() to get a character from the keyboard
+	without requiring a terminating carriage return.
+	Works correctly on VMS, Unix(Berkeley and System %, and MS/DOS.
+getjpi.c
+	VMS routine vmsgetsyi() to retrieve some process information
+	by calling the LIB$GETJPI runtime library routine.
+getjpi.com
+	VMS command procedure to display all information about a
+	process (VMS getjpi = get job process information).
+getkbnow.c
+	VMS routine getkbnow() to get a character from the keyboard
+	without requiring a terminating carriage return,
+	and possibly without waiting for a character to be typed.
+	A public-domain program (from Decus) that I modified.
+	Portions of this program are included in getimmed.c.
+getopt.c
+	AT&T public-domain source for Unix getopt(3).
+getpid.c
+	VMS routine vmsgetpid() to translate a process name to a process id.
+getred.c
+	VMS routine getredirection() to implement Unix-style file redirection
+	under VMS.
+	A public-domain program (from Decus) that I modified.
+getsyi.c
+	VMS routine vmsgetsyi() to retrieve information
+	about the system on which it is running.
+	It calls the LIB$GETSYI runtime library routine.
+getsyi.com
+	VMS command procedure to display all information about the VMS
+	system on which it runs (VMS getsyi = get system information).
+getsymbol.c
+	VMS routine getsymbol() to get values of a DCL symbol.
+getuid.c
+	Unix routine to print the return value from a call to getuid.
+graycode.c
+	A quick and dirty program to calculate the gray code sequence.
+	I've figured out that there are a countable infinity number of
+	gray codes, now I need to add this to the comment. I also need to
+	add a suggestion from a reader on using a macro to calculate gray
+	code values.
+grep.msd
+	Public- domain Decus domain source for the grep utility.
+	Compiles and runs on MS/DOS.
+grep.vms
+	Another public- domain Decus domain source for the grep utility
+	that runs on VMS.
+hanoi.c
+	Tower of Hanoi program (recursive demonstration).
+hd.c
+	A program to display binary value of file contexts,
+	similar to the Unix od command or the MS/DOS debug command.
+	This program determines which is the most significant  byte in a
+	multibyte value (e.g. an int) and arranges its display accordingly.
+	This is a standard filter utility (as described above).
+help
+	Unix Bourne shell script to expand and save man manualk pages.
+hex.ps
+	A PostScript(tm) program which prints PostScript(tm) string data
+	as hex digits.
+ifcomment.c
+	A program to add identifying comments to
+	#else and #endif directives.
+	This is a standard filter utility (as described above).
+indcomment.c
+	A quick and dirty program to uniformly indent trailing comments.
+imglibsym.c
+	VMS routine vmsimglibsym() to find the module name in the system
+	library (sys$library:imagelib.olb) associated with a given key.
+	Calls vmslibsym (in libsym.c).
+init.si
+	Catalytix SI C language interpreter startup file.
+instr.c
+	VMS routine to scan a string for the occurrence of a substring.
+	Very easy to convert to other compilers/operating systems.
+
+isascii.c
+	Filter utility to determine if a file contains non-ascii characters.
+	Uses filter.c but not basename.c.
+	Unlike other filters, recognizes no -options (not even -h),
+	but does recognize that a single - represents standard input.
+itmlst.h
+	VMS file to make it easier to construct the "item lists"
+	needed by many VMS system service and runtime library
+	routines.
+kbin.c
+	VMS routine kbin() to get a character from the keyboard
+	without requiring a terminating carriage return,
+	A public-domain program (from Decus) that I used in
+	getkbnow and getimmed (mentioned elsewhere in this list).
+kbinr.c
+	VMS routine kbinr() to get a character from the keyboard
+	without requiring a terminating carriage return,
+	Nearly identical to kbin (mentioned elsewhere in this list).
+	A public-domain program (from Decus),
+kermitget.com
+	Brief VMS command procedure to assist cross-system file transfers.
+kermitserver.com
+	Brief VMS command prodedure to put vms system into kermit server mode.
+lbrdef.h
+	VMS $LBRCTLDEF (librarian routine) assembly language 
+	definitions converted to a C include file
+	(extracted from the system file starlet.mlb).
+letter.c
+	MS/DOS program to compose a formalletter, writing a "Sincerely.."
+	trailer at the end then invoking the MS/DOS editor edlin.
+libsym.c
+	VMS routine vmslibsym() to find the module name
+	(in a VMS object or image library) associated with a given key.
+	Calls the VMS runtime library librarian routines.
+lineno.c
+	Filter utility to number lines in a file and print some
+	or all of the numbered lines.
+	Originally written by Alan Feuer at Catalytix and modified by me.
+	This is not a standard filter utility (as described above).
+lines.c
+	A program to print a set of lines of a certain length
+	(e.g. 60 lines, each 80 characters long.
+linklist.c
+	General routine to maintain a linked list,
+lnmdef.h
+	VMS SYS$CRELNM (logical name services) assembly language
+	definitions converted to a C include file
+	(extracted from the system file starlet.mlb).
+log.com
+	VMS command procedure to  maintain a logfile of events, work done.
+login.com
+	VMS session login command procedure.
+	(Analogous to Unix .profile or .login files).
+login.sun
+	Unix C-shell .login files I used on an Onyx, Sun, and Vax
+	(running Ultrix), respectively.
+m.c
+	MS/DOS"more" front end that allows filenames to be specified.
+make.com
+	VMS command procedure to imitate the Unix "make" command.
+makebuild.com
+	VMS command procedure "subroutine" called by make kitbuild procedures
+	written for Catalytix (which are not in this package).
+makecheck.com
+	VMS command procedure to determine whether some library files
+	need to be recompiled (written for Catalytix).
+maketool.com
+	VMS command procedure to build the tools I used on VMS
+	while I was working at Catalytix.
+maxmin.c
+	VMS C program to compare two numbers (using VMS lib$callg
+	runtime library routine).
+median.c
+	C program to calculate medians.
+mkascii.c
+	MS/DOS C program to convert a binary file to ascii hex.
+ml.c
+	This program will measure the length of lines in a text file.
+	This is a standard filter utility (as described above).
+mntpcfs.c
+	A program to mount a 3 1/2 inch floppy dos disk on a Sun sparcstation.
+	It is intended to be compiled, the executable owned by root, and
+	chmod ug+s (turn on setuid bits) so that ordinary users can mount
+	and unmount dos floppy disks.
+mode.c
+	C program to display the mode (access attributes) of a file.
+	This is not a standard filter utility (as described above).
+more.c
+	This program emulates the unix command "more".
+	This is not a standard filter utility (as described above).
+	Modeled on vu.c with Mark Williams C distribution.
+more.mwc
+	Another program emulateing the unix command "more".
+	This is not a standard filter utility (as described above).
+	Modeled on vu.c with Mark Williams C distribution.
+mortgage.c
+	Program to calculate mortgage payments, including present mortgage on
+	our home (as of 2 March 1992).
+mortgage.c1
+	An older version of mortgage.c.
+mortgage.c0
+	A still older version of mortgage.c.
+movc3.c
+	VMS C routine to move a string (using VMS lib$movc3
+	runtime library routine)..
+mpmail
+	Unix Bourne shell script to parse and print mailCfiles using
+	awk, mp, and lpr
+multifile.com
+	VMS command procedure to loop through a comma-separated list
+	of words on a command line.
+nextargv.c
+	C routine to loop through arguments on a command line.
+	On Vms it expands wild cards and allows commas to separate
+	filenames. On Unix and MS/DOS, this routine simply returns the
+	next argument.
+nextargv.cnext
+	An newer version of nextargv.c.
+	The routine expands wild card characters on VMS and
+	MS/DOS. On VMS, the routine allows commas to separate file names.
+	On Unix and MS/DOS the routine will descend directory trees.
+	(On VMS, the filename wildcard syntax can be used to descend trees.)
+	External flags and variables are defined in the routine to
+	control aspects of wild card expansion and directory tree
+	searching.
+nlcr.c
+	MS/DOS C routine to add MS/DOS end-of-lines (CR, NL) to
+	files which may not have them (Unix text file lines end in NL only).
+nocr
+	Unix Bourne shell script to remove carriage returns from input files.
+nocr.c
+	C program to remove carriage returns from input files.
+	This is a standard filter utility (as described above, being developed).
+nonulls
+	Unix Bourne shell script to remove null characters from input files.
+notediff.com
+	VMS command procedure to compare files and note differences.
+numlines
+	Unix Bourne shell script to number lines in input files.
+objdef.h
+	VMS $OBJDEF (object language definitions) assembly language
+	definitions converted to a C include file
+	(extracted from the system file starlet.mlb).
+origdiff.com
+	VMS command procedure to compare .h and .c files
+	to those in the [,orig] subdirectory.
+overdue.c
+	Filter utility to scan a list of books and
+	displaying names of books near their due dates.
+ow
+	Unix Bourne shell script to use a filter modify a file in place.
+	Modeled on "The UNIX System", page 154.
+owsed
+	Unix Bourne shell script to run sed to  modify a file in place.
+	Modeled on "The UNIX System", page 154.
+pclose.c
+	VNS C routine to mimic the unix pclose() routine.
+	Used in conjunction with david elins's VMS popen() routine (popen.c).
+ph.c
+	A C program to maintain a personal phone and address list.
+	While this is not a standard filter utility (as described above),
+	it uses many of the ideas incorporated in those programs.
+popen.c
+	VNS C routine to mimic the unix popen() routine.
+	Only mimics popen(,"r").
+	Used in conjunction with david elins's VMS pclose() routine (pclose.c).
+popn
+	A C-shell script to extend the C-shell popd command.
+ppcsinit.ful
+	A PostScript(tm) initialization file for PhoenixPage.
+prescript.ps
+	A PostScript(tm) program which converts PostScript(tm) code into
+	PhoenixPage PREscript (pre-"compiled" PostScript(tm))  code.
+prescript.ps0
+	An older version of postscript.ps.
+printobj.ps
+	A PostScript(tm) program which redefines print, ==, etc. to
+	print PostScript(tm) objects on paper, rather than over the
+	communications port.
+printobj.ps0
+	An older version of printobj.ps.
+probe.mar
+	VMS assembly language routine to allow the probe instructions
+	to be called from C.
+	Probe instructions check tgo see if a virtual address is legitimate,
+	i.e. readable or writeable.
+	This routine checks a single address, which is an argument.
+probelen.mar
+	VMS assembly language routine to allow the probe instructions
+	to be called from C.
+	Probe instructions check tgo see if a virtual address is legitimate,
+	i.e. readable or writeable.
+	This routine checks a range of addresses:
+	the length and starting address are arguments.
+profile.unx
+	Unix Bourne shell abbreviated profile script.
+prompt.c
+	VMS C routine vmsprompt() to prompt the user for input (on sys$command).
+	The function will spawn or attatch to a (possibly named) subprocess
+	if the user types "! [name]".
+prps.c
+	A C program to format files for PostScript (tm) printing.
+	This is a standard filter utility (as described above).
+pryde.c
+	A C program to format files for printing like Unix "pr" command.
+	This is a standard filter utility (as described above).
+pscircus.lst
+	A description of the PostScript language model, using the circus as
+	a metaphor.
+pshift.com
+	VMS command procedure to print command procedure arguments.
+pssplit.c
+	A program to truncate long postscript text lines.
+	Characters are not discarded, but newline characters are added.
+	The program tries not to add newline characters in inappropriate
+	places.
+	This is a standard filter utility (as described above).
+	This program is under development, matchparen and matchquote need
+	more thought, postscript comments should be recognized
+	for now, use splitline instead
+pstrunc.c
+	A C program to truncate long lines in PostScript (tm) files.
+	This is a standard filter utility (as described above).
+purgeall.com
+	VMS command procedure to purge old versions of files on a disk.
+qsort.c
+	C routine to implemently the qsort(3) standard library
+	function. Originally written for VMS.
+rd.com
+	VMS command procedure to delete a directory.
+recover.com
+	VMS command procedure to recover files saved by catalytix image backup.
+replline.c
+	A quick and dirty program to duplicate (on stdout) lines from stdin.
+	See also duplines.
+reverse.c
+	C program to make the last command argument the first,
+	For mimicking VMS commands under Unix.
+rmdir.com
+	VMS command procedure to delete a directory tree.
+rmscanon.c
+	VMS routine vmsrmscanon() to convert VMS filenames to a canonical form.
+rmsdump.c
+	VMS program program to dump rms files in raw mode.
+rubout.com
+	VMS command procedure to delete a file, filling in version if needed.
+ruler
+	Unix Bourne shell script to print lines of a fixed length.
+sclibs.com
+	VMS command procedure to define logical names for the linker.
+	Used in Catalytix program development.
+searchall.com
+	VMS command procedure to search the whole disk, checking each
+	filefor a particular text string.
+setdescrip.c
+	VMS C routine setdescriptor() to fill a fixed_length string descriptor
+	from a C string.
+sethere.com
+	VMS command procedure to form a lotical name from the current directory
+	and define it as the current disk and directory.
+setprv.com
+	VMS command procedure to change/display process privileges.
+setsymbol.c
+	VMS C routine setsymbol() to set DCL symbols from within a program.
+sf.com
+	VMS command procedure to set a DCL symbol for a VMS foreign command.
+	This command procedure can be used to facilitate invoking VMS
+	programs in a Unix-like manner (i.e. simply typing the command
+	name, not "run command").
+sholnklog.com
+	VMS command procedure to show logical name values used by the linker.
+showfile.com
+	VMS command procedure to show continually show files in use.
+showstat.c
+	C routine to display a C (Unix) stat structure.
+	This is not a standard filter utility (as described above).
+sidebyside.c
+	Utility to list lines in a file side by side.
+	This is not a standard filter utility (as described above).
+	Uses basename.c but not filter.c.
+sidebyside.cprev
+	An older version of sidebyside.c.
+sidebyside.cold
+	An still older version of sidebyside.c.
+simpgrph.ps
+	A PostScript procedure prolog. All PostScript operators are
+	executed. Additionally, before any operator that marks paper
+	(stroke, fill, image, etc.) commands are printed that implement
+	the marking operation. This prolog is intended to simplify
+	PostScript files. Only the page-marking operations are printed.
+since
+	Unix Bourne shell script to print names of recently created files.
+skipws.c
+	Utility routines to skip over white space in a line, skip to
+	white space in a line, and advance to the next field in a line.
+sl.com
+	VMS command procedure to define a logical name.
+sleep.c
+	Program to loop (sleep) for a user-specified number of seconds.
+sp.c
+	C program to set LA50 printer characteristics.
+	I use this on my DEC Rainbow at home.
+space2
+	 # quick and dirty Bourne shell script to double space files.
+spawn.c
+	VMS C program to  call the LIB$SPAWN runtime library routine.
+spawn.com
+	VMS command procedure to spawn time consuming tasks.
+splitline.c
+	A program to split up long text lines.
+	This is a standard filter utility (as described above).
+stepinst.com
+	VMS debugger command file to redefine a VT100 keypad key.
+stringcase.c
+	C routines to convert strings to upper or lower case.
+		uppercase(str)	in place
+		lowercase(str)
+		char *str;
+		uppercase2(str_out,str_in)
+		lowercase2(str_out,str_in)
+			char *str_out;
+			char *str_in;
+	C routines to convert strings to upper or lower case,
+	except withing quotes.
+		upperflip(str)	in place
+		lowerflip(str)
+		char *str;
+		upperflip2(str_out,str_in)
+		lowerflip2(str_out,str_in)
+			char *str_out;
+			char *str_in;
+strtok.c
+	Alan Feuer's implementation of the standard C strtok(3) routine.
+strucmp.c
+	C routines that compare strings independent of alphabetic case,
+	but otherwise work like standarc C routines strcmp(3) and strncmp(3).
+		strucmp(s1,s2)
+		strnucmp(s1,s2,len)
+			char *s1;
+			char *s2;
+			register int len;
+stty.c
+	C program to set VT100 terminal characteristics.
+	I use this on my DEC Rainbow at home.
+su.c
+	A version of the Unix "su" command, customized for me.
+submake.com
+	VMS command procedure to submit the make.com command procedure
+	(described elsewhere in this file) for VMS batch processing.
+system.c
+	VMS C program to mimic the standard Unix system(3) call.
+tail.c
+	A version of the Unix tail command
+	to print the last few lines of a file.
+	The program will also print the first few lines of a file
+	(like the Unix head command) either by a runtime option or
+	by setting a compile time switch.
+	This is a standard filter utility (as described above).
+textlib.c
+	VMS text library reading routines.
+	A public-domain program (from Decus) that I greatly modified.
+ticket.c
+	A version of the Unix "su" command, customized for me.
+	Shorter and more system-independent than su.c.
+to_paper.ps	No description yet
+	A PostScript procedure prolog to re-define =, ==, and print
+	so that they put their output on the printed page
+	rather than to stdout
+to_papr2.ps
+	An older version of to_paper.ps
+touch.com
+	A VMS command procedure to change the "modify" date on files.
+	Also converts the files to a format the the VMS edt editor likes.
+translate.c
+	Calls the VMS lib$sys_trnlog runtime library routine.
+	This routine is not as flexible as trlnlm.c
+treesize
+	A Unix Bourne shell script to get sizes of direectories in a dir tree.
+trnall.c
+	Repetitively calls the trnlnm routine to find a logical name
+	search the four logical name tables until the name is found,
+	then uses that table.
+trnfull.c
+	Iteratively translate a VMS logical name until basic equivalence
+	name is found
+trnlnm.c
+	Translate a VMS logical name, allowing the full flexibility of
+	VMS (version 4) logical names usage.
+tw.c
+	Type lines on the line printer - ^Z to stop.
+	I use this on my DEC Rainbow at home.
+ty.c
+	An old program to list files, possible numbering the lines.
+	This is a filter program, but not a standard filter utility
+	(as described above).
+upcase
+	A Unix Bourne shell script to change upper to lower case or vice-versa.
+uppers.h
+	uppers[] and lowers[], tables where index is a char value
+	and index entry is the uppercase (lowercase) value of the char.
+	Can be used by a table-based toupper and tolower macros.
+usage.tips
+	A Compendium of all the little tricks and tips I've picked up
+	over the years.
+uucp.call
+	Unix Bourne shell script to start up and observe the uucico
+	uucp driver.
+valucomp.ps
+	Quick and Dirty Postscript procedure to compare two object values
+	returns true if two object values are equal (but not necessarily eq)
+wait.c
+	A program to wait for a specified time; the program argument is
+	a counter.
+wait2.c
+	A program to wait for a specified time; the program argument is
+	seconds to wait. A counter is incremented while waiting and its
+	value is printed when waiting is done.
+wait3.c
+	A program to wait for a specified time; the program arguments are
+	seconds to wait, and can be bigger than in wait2.c
+wait4.c
+	A program to wait for a specified time; the program arguments are
+	counters, the time waited is displayed.
+wc.c
+	A version of the Unix wc command.
+	to count characters, lines, and words in a file.
+	This is a standard filter utility (as described above).
+worklog.c
+	A program to help keep log of work done.
+	While this is not a standard filter utility (as described above),
+	it uses many of the ideas incorporated in those programs.
+worklog.c0
+	An older version of worklog.c, kept just in case something
+	is wrong with worklog.c (which was re-edited to remove compiler
+	warnings).
+writeuser
+	A Unix Bourne shell script to send a message directly to a
+	user's terminal.
+ydebug.h
+	My debugging macros that print a variable's name and value.
+	This file was originally written for non-Ansi C. With a
+	simple #if change (obvious in the source) it will work for
+	Ansi C (or at least Microsoft's version of Ansi C).
+ydedir.c
+	A Program to list files and sizes. Also lists minimum,maximum
+	size files and median and average sizes.
+	The program depends on nextargv() in nextargv.cnext
+	(described elsewhere in this list).
+ydedir.c0
+	An older version of ydedir
+ydecho.c
+	A program to echo its arguments to standard output, like
+	(but not exactly like), the Unix echo command. This program
+	recognizes some "escape" character sequences.
+ydeglue.c
+	The program performs a function similar to Vms backup or Unix tar
+	and cpio. Like these utilities, this same program will both pack and
+	unpack a collection. It is designed for use with text files only.
+	There are many options to control which files are selected, and the
+	program has an extensive description obtainable by using the -h option.
+
+	Ydeglue.c is a standalone program; it does not need any of the other
+	routines in this package. It contains abbreviated versions of some
+	of those other routines,
+
+	While this is not a standard filter utility (as described above),
+	it uses many of the ideas incorporated in those programs.
+
+	Tdeglue.c also contains matchwild, a routine to match strings using
+	(modified) Unix regular filename conventions. Some of ydeglue's
+	options use this routine to match filenames,
+
+	Even though ydeglue only handles text files, non-text files can
+	be handled by using ydencode (described elsewhere in this list)
+	before ydeglue.
+ydemkcmd.c
+	A program to generate VMS command procedures or MS/DOS
+	batch files, applying the same command to a sequewnce of files.
+ydencode.c
+	A program to convert and deconvert files to printable characters
+	in a rudimentary fashion. It is intended to be used to convert
+	object files, whose bytes may contain any value, to text files of
+	printable ascii characters.
+
+	All files are treated as streams; this program does not handle RMS
+	file types (used by VMS).
+
+	This is a standard filter utility (as described above).
+ydencrypt.c
+	This program will encrypt and decrypt files in a somewhat rudimentary
+	fashion.  This is a standard filter utility (as described above).
+cpp/*.*
+	Files to build a cpp preprocessor. This preprocessor was
+	originally written by Martin Minow, who placed the sources
+	into the public domain. I've modified these sources both
+	to fix some bugs and to customize them for the work I did
+	for the Catalytix Corporation. The Catalytix modifications
+	can be enabled/disabled with C language #define directives..
+
+	rpp.c is a VMS specific program I wrote to perform the
+	cpp function for VAX-C (which did not have a separate preprocessor
+	when I wrote rpp). rpp reverse-processes (the "r" in rpp_ a C compiler
+	listing file to produce the C source code that would have been
+	produced by a pre-processing compiler phase.
+
+mmon/*.*
+	Files to build the C language memory monitor. This is a utility
+	I wrote for the Catalytix corporation to monitor the use of
+	C language malloc and free calls.
+	As they stand, these files will not build a standalone utility.
+	They are dependent on other Catalytix products, but the dependencies
+	are minimal and a stand-alone product could be easily constructed.
+
+vdyn/*.*
+	Another set of files I initially wrote for Catalytix.
+	These files are VMS-specific.
+	They provide a "dynamic-linking" facility for a running program
+	(such as the Catalytix C interpreter).
+	Dynamic linking means that a running program can access
+	object code that was not linked with the program originally,
+	i.e. routines that were not originally linked with the program
+	can be used, they are "dynamically" linked with the running
+	program.
+
+	This routine is an extension of the VMS lib$find_image_symbol
+	runtime library routine, which implements a more restricted
+	version of this facility.
+-- files added but not alphabetized or described
+dirtr2.c	Description not alphabetized
+	Like dirtree.c, this is an MS/DOS program to scan directory trees
+	to print the filenames. However, I think this routine will work
+	with earlier versions of DOS and Microsoft C.
+I GOT HERE
+dumpdir.c	No description yet
+isascii2.c	No description yet
+isdir.c		No description yet
+kermitcua.c	No description yet
+pause.c		No description yet
+selfprnt.c	No description yet
+trlmybuf.c	No description yet
+ypwd.c		No description yet
+chkpps		No description yet
+eclpr		No description yet
+fixscript	No description yet
+getlastarg	No description yet
+vg		No description yet
+crypto.c	No description yet
+colr.ps		No description yet
+colrgrid.ps	No description yet
+colrlevl.ps	No description yet
+colrtest.ps	No description yet
+concat_procs.ps	No description yet
+counttile.ps	No description yet
+dbgutil.ps	No description yet
+dictkeys.ps	No description yet
+dictkey2.ps	No description yet
+dictscan.ps	No description yet
+dkeys.ps	No description yet
+findops.ps	No description yet
+framepage.ps	No description yet
+grids.ps	No description yet
+grids.ps0	No description yet
+heapsor0.ps	No description yet
+heapsor1.ps	No description yet
+issuelog.ps	No description yet
+loudsys.ps	No description yet
+mclpr		No description yet
+ppcsinit.fx3	No description yet
+ppcsinit.fxt	No description yet
+ppcsinit.qck	No description yet
+savectr.ps	No description yet
+screen.ps	No description yet
+showbox.ps	No description yet
+showlabel.ps	No description yet
+showpath.ps	No description yet
+sortfont.ps	No description yet
+spotdata.ps	No description yet
+spotfunc.ps	No description yet
+vistordr.ps	No description yet
+xy.ps		No description yet

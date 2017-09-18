@@ -1,0 +1,6 @@
+ # $Id$
+stty dec new cr0
+set TERM=vt100
+export TERM
+stty
+echo "TERM=$TERM"

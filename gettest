@@ -1,0 +1,39 @@
+
+ # Quick and dirty shell script to look in getps and in port directory
+ # $Id: gettest,v 1.0 2004-05-27 16:40:22-04 david Exp david $
+PHXPORT=/vines/vines10/cust/phxport
+ME=`basename $0`
+if test $# -ne 1
+then
+	echo "Usage: $ME filename" 1>&2
+	exit 1
+fi
+for NAME
+do
+    if getps $NAME
+    then
+	    echo "$ME: getps found $NAME" 1>&2
+    else
+	    cd $PHXPORT
+	    TESTFILE=""
+	    for FILE in $NAME.*
+	    do
+		if test ! "$TESTFILE"
+		then
+			TESTFILE=$FILE;
+		elif test "$TESTFILE"
+		then
+		    echo "$ME: Too many files starting with $NAME in `pwd`" 1>&2
+		    TESTFILE=""
+		    break;
+		fi
+	    done
+	    if test "$TESTFILE"
+	    then
+		echo "$ME: Found $TESTFILE in `pwd`" 1>&2
+		cat $TESTFILE
+	    else
+		echo "$ME: Error looking for $NAME in `pwd`" 1>&2
+	    fi
+    fi
+done

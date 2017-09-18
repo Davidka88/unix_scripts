@@ -1,0 +1,59 @@
+
+ # Bourne shell script
+ # $Id: bugdiff,v 1.0 2004-05-27 16:40:29-04 david Exp david $
+#  to see what bug reports have been modified, added
+#  Does a directory list of bug reports and looks for new or changed
+#  files.
+#  Options: -s creates a baseline directory list
+#	(a baseline is also created if it does not exist)
+
+OPTIONS="-s"
+USAGE="Usage: `basename $0` [ $OPTIONS ]"
+RECORDDIR=$HOME/bugs
+BUGDIR=/vol/byron1/release/qa/db
+BUGRECORD=$RECORDDIR/record.bug
+BUGCURRENT=$RECORDDIR/current.bug
+
+set -- `getopt $OPTIONS $*`
+
+if [ $? != 0 ]
+then
+	echo "$USAGE" 2>&1
+	exit 2
+fi
+
+for i in $*
+do
+	case $i in
+	-s) START="make_buglog"; shift ;;
+	--) shift; break;;
+	esac
+done
+
+if test ! -f $BUGRECORD
+then
+	echo "$BUGRECORD does not exist, creating it"
+	START=make_buglog
+elif test "$START"
+then
+	echo "Replacing $BUGRECORD"
+else
+	echo "Scanning for new and changed bug reports"
+fi
+
+echo -n "ls -l $BUGDIR/[0-9] | grep 'bug$' | sort +0.45n > $BUGCURRENT..."
+ls -l $BUGDIR/[0-9] | grep 'bug$' | sort +0.45n > $BUGCURRENT
+echo done
+
+if test "$START"
+then
+	echo "mv $BUGCURRENT $BUGRECORD"
+	mv $BUGCURRENT $BUGRECORD
+else
+	echo "diff $BUGCURRENT $BUGRECORD"
+	if diff $BUGCURRENT $BUGRECORD
+	then
+		echo "No bug changes, so rm $BUGCURRENT"
+		rm $BUGCURRENT
+	fi
+fi

@@ -1,0 +1,6 @@
+ # $Id: findopr,v 1.0 2004-05-27 16:40:21-04 david Exp david $
+cd $MEDEVELOPMENT/custom
+for O
+do
+	grep "OPR[ 	]*@[ 	]*$O[ 	]*=" *.imv
+done

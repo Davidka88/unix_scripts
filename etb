@@ -1,0 +1,5 @@
+ # args - 1: tag 
+ # $Id: etb,v 1.0 2004-05-27 21:25:08-04 david Exp david $
+EDITOR=editback
+export EDITOR
+exec et $*

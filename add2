@@ -1,0 +1,21 @@
+ # $Id: add2,v 1.0 2004-05-27 16:40:28-04 david Exp david $
+if test $# -lt 1
+then
+	echo echo "usage $0 who [files...]"
+	exit 1
+fi
+TMP=/tmp/mailto$1
+FILE=$HOME/mail/to/$1
+NOW="message added on `date`"
+if test $# -eq 1; then set $1 - ; fi
+while test $# -ge 2
+do
+
+	echo $NOW >>$TMP
+	echo "---------" >>$TMP
+	cat $2 >>$TMP
+	echo "---------" >>$TMP
+	shift
+done
+if test -r $FILE; then cat $FILE >> $TMP; fi
+mv $TMP $FILE

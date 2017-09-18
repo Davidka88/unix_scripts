@@ -1,0 +1,51 @@
+
+ # Unix Bourne shell script to to print (C) files using my pr and prps filters
+ # $Id: clpps,v 1.0 2004-05-27 16:40:31-04 david Exp david $
+# parse options
+# modified 20-Feb-1990	prps does not reverse order of pages (prps -r)
+# modified 12-Mar-1990	prps reverses order of pages again
+# modified 14-Nov-1991	to use alternate name (-n option)
+# modified 15-Nov-1991	-w option wraps lines at 80 chars
+# modified 03-Dec-1991	-w option prevents wrapping lines at 80 chars
+# modified 04-Dec-1991	detects line lengths greater than 80 for TABS
+# modified 10-Dec-1991	added -x, opposite of -t, tabs are not compressed
+# modified 27-Apr-1992	don't read stdin to get tabsize
+set -- `getopt tvwxn: $*`
+if [ $? != 0 ]
+then
+	echo "Usage: `basename $0` [-tvwx] [n printname] [files ...]"
+	exit 2
+fi
+PRPSOPT=b	# print page heading in boldface
+OPT="-bw0"	# default: wrap lines at 80 characters
+for ARG
+do
+	case $ARG in
+	-t) TABS=t4; shift;;		# default does not adjust tab size
+	-v) PORTRAIT=v; shift;;		# default is landscape mode
+	-w) OPT=""; shift;;		# do not wrap lines at 80 characters
+	-x) NOTABS=yes; shift;;		# definitely do not adjust tab size
+	-n) FNAME=$2; shift 2;;		# default file name
+	--) shift; break;;
+	esac
+done
+if [ "$NOTABS" ]; then TABS=""; fi
+if [ $# -eq 0 ]		# use stdin
+then
+	set -- -
+	NOTABS=yes
+fi
+if [ "$FNAME" ]; then OPT="$OPT -n \"$FNAME\""; fi
+for FILE
+do
+	SAVETABS=$TABS
+	if [ ! "$NOTABS" ]
+	then
+		LEN=`ml $FILE | sed -e 's/.*=//' -e 's/ .*//'`
+		if test $LEN -gt 80; then TABS=t4; fi
+	fi
+	echo -n "pryde $OPT -f$TABS $FILE | prps -$PRPSOPT$PORTRAIT | bpps d=g "
+	pryde $OPT -f$TABS $FILE | prps -$PRPSOPT$PORTRAIT | bpps d=g
+	echo ""
+	TABS=$SAVETABS
+done

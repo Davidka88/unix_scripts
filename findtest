@@ -1,0 +1,52 @@
+
+ # Bourne shell script to find test files
+ # $Id: findtest,v 1.0 2004-05-27 16:40:21-04 david Exp david $
+if test "$1" = DisplaY	# called recursively to display test name?
+then
+	X=`echo $3 | sed 's=./=/='`	# remove leading .
+	echo "$2$X"
+	exit
+fi
+OPTIONS="-g"
+set -- `getopt $OPTIONS $*`
+if [ $? != 0 ]
+then
+	echo "Usage: `basename $0` [-g for genoa tests]" 1>&2
+	exit 2
+fi
+for i in $*
+do
+	case $i in
+	-g) GENOA=yes; shift ;;
+	--) shift; break;;
+	esac
+done
+QA_DIR=/qa/ps
+SUBMAP=`ypcat -k auto.master | grep "$QA_DIR" | awk ' {print $2}'`
+if [ "$GENOA" ]
+then
+	TMP=`ypcat -k $SUBMAP | sed -n -e 's/ .*//' -e '/genoa/p'`
+else
+	TMP=`ypcat -k $SUBMAP | sed -e 's/ .*//' -e '/genoa/d'`
+fi
+cd $QA_DIR	# check access to all directories
+for F in $TMP
+do
+	if test -x $F	# searchable directories are executable
+	then
+		SUBDIRS="$SUBDIRS $F"
+	else
+		echo "Directory $QA_DIR/$F is not readable" 1>&2
+	fi
+done
+SUBDIRS="$HOME/ppsaux/$SUBDIRS"
+for FILE
+do
+	for F in $SUBDIRS
+	do
+		cd $QA_DIR
+		cd $F
+		HERE=`pwd`
+		find . -name "$FILE" -exec $0 DisplaY $HERE {} \;
+	done
+done

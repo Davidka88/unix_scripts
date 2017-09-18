@@ -1,0 +1,49 @@
+
+ # Unix Bourne shell script to compare file(s) in the current directory 
+ # to the those on the database tree or in the actual database
+ # $Id: chkdiff,v 1.0 2004-05-27 16:40:30-04 david Exp david $
+
+ME=`basename $0`
+USAGE="Usage: $ME [-h] [-r revision] [files ...]"
+DB_DIR=`pwd`
+DB_DIR=$PROJECTROOT/`basename $DB_DIR`
+
+# parse options
+while getopts hr: ARG
+do
+	case $ARG in
+	r) REV=$OPTARG;;	# revision
+	h) cat << EOF
+$USAGE
+-r revision	Use revision instead of $DB_DIR
+-h		print this message and terminate
+EOF
+	exit;;
+	\?) echo "$USAGE" 1>&2
+	    exit 2;;
+	esac
+done
+shift `expr $OPTIND - 1`
+
+
+if test $# -eq 0
+then
+	echo "$USAGE"
+	exit
+fi
+
+for F
+do
+	if test "$REV"
+	then
+		echo "asccs diffs -r$REV $F | more"
+		if test ! -t 1	# true if stdout is not the terminal
+		then
+			echo "asccs diffs -r$REV $F | more" 1>&2
+		fi
+		asccs diffs -r$REV $F | more
+	else
+		echo "diff -w $F $DB_DIR | more" 1>&2
+		diff -w $F $DB_DIR | more
+	fi
+done

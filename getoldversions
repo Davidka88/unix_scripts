@@ -1,0 +1,66 @@
+
+ # written to recover older versions of a file into directory pdi/pdi
+ # $Id: getoldversions,v 1.0 2004-05-27 16:40:22-04 david Exp david $
+#GET_CMD=asccs
+GET_CMD=sccs
+USAGE="Usage: `basename $0` [-b sccs_major_id] file startversion [stopversion]"
+set -- `getopt -b: $*`
+if [ $? != 0 ]
+then
+	echo "$USAGE" 2>&1
+	exit 1
+fi
+SCCS_BASE=2	# sccs ids are usually 2.something
+for i in $*
+do
+	case $i in
+	-b)  SCCS_BASE=$2; shift 2 ;;
+	--) shift; break;;
+	esac
+done
+if [ $# = 2 ]
+then
+	STARTVERSION=$2
+	STOPVERSION=$2	# retrieve up to, but not including, this version
+elif [ $# = 3 ]
+then
+STARTVERSION=$2
+STOPVERSION=$3	# retrieve up to, but not including, this version
+else
+	echo "$USAGE" 2>&1
+	exit 1
+fi
+FILE=$1
+if test $STARTVERSION -gt $STOPVERSION
+then
+	VER=$STOPVERSION
+	STOPVERSION=$STARTVERSION
+	STARTVERSION=$VER
+fi
+VER=$STARTVERSION
+if [ -f $FILE ]
+then
+	echo "$FILE already exists, not overwritten"
+	exit 1
+fi
+echo "get commmand is $GET_CMD, current dir is `pwd`"
+#set -e
+if test $VER -gt $STOPVERSION
+then
+	echo "$USAGE" 2>&1
+	exit 1
+fi
+while test $VER -le $STOPVERSION
+do
+	#echo -n "$FILE "
+	if $GET_CMD get -r$SCCS_BASE.$VER $FILE > /dev/null
+	then
+		:
+	else
+		echo "$USAGE" 2>&1
+		exit 1
+	fi
+	mv $FILE $FILE.$SCCS_BASE.$VER
+	ls -l $FILE.$SCCS_BASE.$VER
+	VER=`expr $VER + 1`
+done

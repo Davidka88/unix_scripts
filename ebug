@@ -1,0 +1,76 @@
+
+ # Unix Bourne shell script to to edit bug reports
+ # $Id: ebug,v 1.0 2004-05-27 16:40:20-04 david Exp david $
+# Arguments can be bug numbers, a file containg bug numbers,
+# or -, which means stdin is a file containing bug numbers
+
+BUGROOT=/projects/buglog/db
+TMP=/users/yde/tmp/ebug.$$
+ME=`basename $0`
+USAGE="Usage: $ME [-eh] [bugnumbers... or files... or -]"
+VIEW="-R"	# default is view mode
+
+# parse options
+while getopts eh ARG
+do
+	case $ARG in
+	e) VIEW="";;	# allow editing
+	h) cat << EOF
+$USAGE
+Use vi to view bug reports.
+-e		edit the bug reports, i.e. open the files  for writing
+-h		print this message and terminate
+bugnumbers	Bug report numbers
+files		File containing bug numbers
+-		Bug numbers are piped in
+If no files are specified, a brief message is displayed and nothing is printed.
+EOF
+	exit;;
+	\?) echo "$USAGE" 1>&2
+	    exit 2;;
+	esac
+done
+shift `expr $OPTIND - 1`
+
+if [ $# -eq 0 ]
+then
+	echo "$USAGE" 1>&2
+	exit
+fi
+
+rm -f $TMP
+
+export BUGROOT TMP
+
+getbug() {
+	LASTDIGIT=`echo $1 | sed 's/.*\(.\)/\1/'`
+	REPORT=$BUGROOT/$LASTDIGIT/$1.bug
+	echo $REPORT >> $TMP
+}
+
+for BUGNUM
+do
+	if test -f $BUGNUM -o $BUGNUM = "-"
+	then
+			cat $BUGNUM | while read BUGNUM
+			do
+				getbug $BUGNUM
+			done
+	else
+		getbug $BUGNUM
+	fi
+done
+
+FILES=`cat $TMP`
+rm -f $TMP
+
+if [ "$VIEW" ]
+then
+    echo "Editing: $FILES"
+    echo "Specify $ME -e to edit instead of view"
+else
+    echo "Editing: $FILES"
+fi
+
+sleep 2
+vi $VIEW $FILES
